@@ -1,4 +1,4 @@
-personal_ws-1.1 en 2447 utf-8
+personal_ws-1.1 en 2457 utf-8
 AAS
 ACFAIL
 ACFREQ
@@ -370,6 +370,7 @@ HITRANS
 HMAC
 HOSTSYNC
 HOWTO
+HPE
 HPS
 HPUX
 HREF
@@ -881,6 +882,7 @@ SDR
 SDRnnnnn
 SDT
 SELFTEST
+SELinux
 SENTR
 SERIALNO
 SERVER's
@@ -1559,6 +1561,7 @@ gestion
 getDescription
 getDevice
 getTrackingResult
+getDevicesVariableValues
 getValue
 getVariable
 getenv
