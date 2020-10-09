@@ -1,4 +1,4 @@
-personal_ws-1.1 en 2457 utf-8
+personal_ws-1.1 en 2498 utf-8
 AAS
 ACFAIL
 ACFREQ
@@ -12,7 +12,6 @@ ADDRINFO
 ADK
 ADKK
 AEC
-aec
 AEG
 AES
 AGM
@@ -28,6 +27,7 @@ ARS
 ATEK
 ATR
 ATT
+ATTRS
 ATX
 ATs
 AVL
@@ -94,6 +94,7 @@ BTIntervl
 BTS
 BTTime
 BTV
+BUFRD
 BUZ
 BYP
 BZ
@@ -114,6 +115,7 @@ BayTech
 BeepTone
 Belkin's
 Benedikt
+Berge
 BestPort
 BiWeekly
 Bieringer
@@ -138,7 +140,6 @@ ByPass
 CA's
 CABAC
 CAs
-cb
 CBLimit
 CCC
 CCCC
@@ -206,7 +207,6 @@ DDDDD
 DDF
 DEADTIME
 DEBUGOUT
-dedb
 DELCMD
 DELENUM
 DELINFO
@@ -407,6 +407,7 @@ INIGO
 INNO
 INSTCMDDESC
 INTERNETOFFICE
+INTERR
 INTL
 INV
 INVOLT
@@ -555,6 +556,7 @@ Martinezgarza
 Martín
 Marzouk
 Massimo
+Matthijs
 MaxACVI
 MaxACVO
 MaxDCV
@@ -593,6 +595,7 @@ MyState
 NAK
 NAS
 NBF
+NConfigs
 NETVER
 NETVERSION
 NFS
@@ -672,6 +675,7 @@ Oldworld
 Olli
 Omni
 OmniGuard
+OmniOS
 OmniSmart
 OnLine
 OnTime
@@ -715,6 +719,7 @@ PLL
 PLVn
 POLLFREQALERT
 POMode
+POSIX
 POWERDOWNFLAG
 POWEREX
 POWERLINE
@@ -750,6 +755,8 @@ PhaseWin
 PhoenixContact
 PhoenixTec
 Phoenixtec
+Pi
+PiJuice
 Plesser
 PnP
 Pohle
@@ -931,6 +938,9 @@ STESTI
 STI
 STO
 STP
+SUNWlibusbugen
+SUNWugen
+SUNWusb
 SURTD
 SUSE
 SX
@@ -990,6 +1000,7 @@ Suatoni
 SuperPower
 Sweex
 Symmetra
+Symmetras
 Synology
 SysHrs
 Sysgration
@@ -1164,10 +1175,12 @@ addenum
 addinfo
 addrange
 adkorte
+adm
 admin's
 adminbox
 advorder
 ae
+aec
 af
 aggregator
 ai
@@ -1281,6 +1294,7 @@ bindir
 bitmapped
 bitwise
 bn
+boolean
 boostvoolts
 bootable
 bp
@@ -1301,6 +1315,7 @@ bypassvolts
 byv
 cablepower
 calloc
+cb
 cbl
 cblimit
 cd
@@ -1319,6 +1334,8 @@ cfacvod
 cfacvon
 cfdcvd
 cfdcvn
+cfg
+cfgadm
 cflag
 cflags
 cgi
@@ -1329,8 +1346,10 @@ chargetime
 charset
 checksum
 chgrp
+chipset
 chmod
 chown
+chr
 christoph
 chroot
 chrooted
@@ -1420,18 +1439,21 @@ debouncing
 deci
 decrement
 decrypt
+dedb
 defun
 dep
 dephasing
 deps
 desc
 deschis
+descr
 desde
 dev
 devd
 devel
 devscan
 dfl
+dialout
 dipsw
 dir
 disp
@@ -1545,6 +1567,7 @@ frob
 frontends
 fs
 fsd
+ftdi
 fuji
 fullload
 gamatronic
@@ -1758,6 +1781,7 @@ lowvoltsout
 lr
 lsusb
 lu
+lv
 lvo
 lxml
 lxyz
@@ -1792,6 +1816,7 @@ mecer
 megatec
 memset
 merchantability
+metadata
 metasys
 methodOfFlowControl
 mge
@@ -1823,11 +1848,13 @@ mmddyyyy
 mn
 modbus
 modelname
+modprobe
 monmaster
 monpasswd
 monslave
 monuser
 morbo
+msec
 multi
 multilink
 multimeter
@@ -1963,12 +1990,15 @@ pe
 peername
 pem
 perl
+pfexec
 pfy
 ph
 phasewindow
 phoenixcontact
+picocom
 pid
 pidpath
+pijuice
 pinout
 pinouts
 pkg
@@ -2021,6 +2051,7 @@ probu
 proc
 productid
 prog
+prtconf
 psu
 pw
 pwl
@@ -2122,6 +2153,7 @@ sendline
 sendmail
 ser
 seria
+serialno
 serialnumber
 servicebypass
 setFeature
@@ -2143,11 +2175,14 @@ shutdownpolarity
 shutdowntime
 shutup
 si
+siemens
 sigaction
 sigmask
 simplejson
 simu
+sio
 sitesearch
+sitop
 sizeof
 skel
 slavesync
@@ -2163,11 +2198,13 @@ snmpwalk
 snprintf
 snprintfcat
 sockdebug
+solaris
 solis
 somepass
 something's
 sp
 spanish
+spectype
 spellcheck
 splitaddr
 splitname
@@ -2223,6 +2260,7 @@ sw
 symlink
 symlinking
 symlinks
+symmetrathreephase
 sys
 sysDescr
 sysOID
@@ -2275,6 +2313,7 @@ tsd
 tty
 ttyS
 ttySx
+ttyUPS
 ttyUSB
 ttya
 ttyb
@@ -2299,6 +2338,7 @@ ugen
 ukUNV
 ul
 un
+unconfigured
 undefine
 undervoltage
 unescaped
@@ -2363,6 +2403,7 @@ usb
 usbconfig
 usbfs
 usbhid
+usbif
 usbmisc
 usbups
 usbus
@@ -2391,6 +2432,7 @@ varlow
 varname
 varvalue
 vbatt
+vc
 vendorid
 verifySourceSig
 versa
