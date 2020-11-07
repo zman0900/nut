@@ -1,4 +1,4 @@
-personal_ws-1.1 en 2498 utf-8
+personal_ws-1.1 en 2504 utf-8
 AAS
 ACFAIL
 ACFREQ
@@ -289,6 +289,7 @@ Eriksson
 FEMEA
 FFF
 FH
+FHS
 FINALDELAY
 FIPS
 FIXME
@@ -611,6 +612,7 @@ NNNNNNNNNNNNNNNNNNN
 NOAUTH
 NOCOMM
 NOCOMMWARNTIME
+NOCONF
 NOMBATTV
 NOMINV
 NOMOUTV
@@ -626,6 +628,7 @@ NOTIFYMSG
 NQA
 NTP
 NUT's
+NUTSRC
 NVA
 NX
 Nadav
@@ -1087,6 +1090,7 @@ UTalk
 UUU
 UX
 Ulf
+Uncomment
 Unices
 Unitek
 Upsonic
@@ -1459,6 +1463,7 @@ dir
 disp
 distcheck
 distro
+distros
 dl
 dll
 dlopen
@@ -2338,6 +2343,7 @@ ugen
 ukUNV
 ul
 un
+uncomment
 unconfigured
 undefine
 undervoltage
