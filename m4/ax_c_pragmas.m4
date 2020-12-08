@@ -61,6 +61,18 @@ dnl ###        [CFLAGS="${CFLAGS_SAVED} -Werror=pragmas -Werror=unknown-warning"
     AC_DEFINE([HAVE_PRAGMA_GCC_DIAGNOSTIC_IGNORED_FORMAT_SECURITY], 1, [define if your compiler has #pragma GCC diagnostic ignored "-Wformat-security"])
   ])
 
+  AC_CACHE_CHECK([for pragma GCC diagnostic ignored "-Wtype-limits"],
+    [ax_cv__pragma__gcc__diags_ignored_type_limits],
+    [AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([[#pragma GCC diagnostic ignored "-Wtype-limits"]], [])],
+      [ax_cv__pragma__gcc__diags_ignored_type_limits=yes],
+      [ax_cv__pragma__gcc__diags_ignored_type_limits=no]
+    )]
+  )
+  AS_IF([test "$ax_cv__pragma__gcc__diags_ignored_type_limits" = "yes"],[
+    AC_DEFINE([HAVE_PRAGMA_GCC_DIAGNOSTIC_IGNORED_TYPE_LIMITS], 1, [define if your compiler has #pragma GCC diagnostic ignored "-Wtype-limits"])
+  ])
+
   AC_CACHE_CHECK([for pragma GCC diagnostic ignored "-Wunreachable-code-break"],
     [ax_cv__pragma__gcc__diags_ignored_unreachable_code_break],
     [AC_COMPILE_IFELSE(
