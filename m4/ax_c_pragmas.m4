@@ -110,7 +110,6 @@ dnl ###        [CFLAGS="${CFLAGS_SAVED} -Werror=pragmas -Werror=unknown-warning"
     AC_DEFINE([HAVE_PRAGMA_GCC_DIAGNOSTIC_IGNORED_FORMAT_SECURITY], 1, [define if your compiler has #pragma GCC diagnostic ignored "-Wformat-security"])
   ])
 
-
   AC_CACHE_CHECK([for pragma GCC diagnostic ignored "-Wformat-security" (outside functions)],
     [ax_cv__pragma__gcc__diags_ignored_format_security_besidefunc],
     [AC_COMPILE_IFELSE(
