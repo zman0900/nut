@@ -108,6 +108,7 @@ class interface :
         self.__widgets["progress_battery_charge"]     = self.__widgets["interface"].get_widget("progress_battery_charge")
         self.__widgets["progress_battery_load"]       = self.__widgets["interface"].get_widget("progress_battery_load")
         self.__widgets["add_fav_confirm_button"]      = self.__widgets["interface"].get_widget("add_fav_confirm_button")
+        self.__widgets["del_fav_combobox"]            = self.__widgets["interface"].get_widget("del_fav_combobox")
 
         # Create the tray icon and connect it to the show/hide method...
         self.__widgets["status_icon"] = gtk.StatusIcon()
@@ -140,11 +141,22 @@ class interface :
         # Connect the callbacks
         self.__widgets["interface"].signal_autoconnect( self.__callbacks )
 
-        # UPS List combo box setup ---------------------------------
+        # Setup ComboBoxes ---------------------------------------------
         self.__widgets["ups_list_combo"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
         cell_renderer = gtk.CellRendererText()
         self.__widgets["ups_list_combo"].pack_start( cell_renderer, True )
         self.__widgets["ups_list_combo"].add_attribute( cell_renderer, "text", 0 )
+
+        self.__widgets["del_fav_combobox"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
+        cell_renderer = gtk.CellRendererText()
+        self.__widgets["del_fav_combobox"].pack_start( cell_renderer, True )
+        self.__widgets["del_fav_combobox"].add_attribute( cell_renderer, "text", 0 )
+
+        self.__widgets["ups_commands_combo"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
+        cell_renderer = gtk.CellRendererText()
+        self.__widgets["ups_commands_combo"].pack_start( cell_renderer )
+        self.__widgets["ups_commands_combo"].add_attribute( cell_renderer, "markup", 0 )
+
 
         # Set UPS vars treeview properties -----------------------------
         store = gtk.ListStore( gtk.gdk.Pixbuf, gobject.TYPE_STRING, gobject.TYPE_STRING )
@@ -176,15 +188,6 @@ class interface :
         self.__widgets["ups_vars_tree_store"] = store
 
         self.__widgets["ups_vars_tree"].set_size_request( -1, 50 )
-        #---------------------------------------------------------------
-
-        # UPS Commands combo box setup ---------------------------------
-        self.__widgets["ups_commands_combo"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
-
-        cell_renderer = gtk.CellRendererText()
-        self.__widgets["ups_commands_combo"].pack_start( cell_renderer )
-        self.__widgets["ups_commands_combo"].add_attribute( cell_renderer, "markup", 0 )
-
         #---------------------------------------------------------------
 
         if ( cmd_opts.hidden != True ) :
@@ -351,7 +354,7 @@ class interface :
     def __gui_delete_favorite( self, widget=None ) :
 
         dialog = self.__widgets["interface"].get_widget( "dialog_del_fav" )
-        combo = self.__widgets["interface"].get_widget( "del_fav_combobox" )
+        combo = self.__widgets["del_fav_combobox"]
 
         # Reset favorites combo
         combo.get_model().clear()
