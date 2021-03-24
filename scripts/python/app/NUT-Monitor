@@ -58,7 +58,6 @@ class interface :
     __favorites_path                 = ""
     __fav_menu_items                 = list()
     __window_visible                 = True
-    __glade_file                     = None
     __connected                      = False
     __ups_handler                    = None
     __ups_commands                   = None
@@ -78,9 +77,8 @@ class interface :
 
 
         self.__program_dir = os.path.dirname( sys.argv[0] )
-        self.__glade_file = os.path.join( self.__program_dir, "gui-1.3.glade" )
 
-        self.__widgets["interface"]                   = gtk.glade.XML( self.__glade_file, "main_window", APP )
+        self.__widgets["interface"]                   = gtk.glade.XML( os.path.join( self.__program_dir, "gui-1.3.glade" ) )
         self.__widgets["main_window"]                 = self.__widgets["interface"].get_widget("main_window")
         self.__widgets["status_bar"]                  = self.__widgets["interface"].get_widget("status_bar")
         self.__widgets["ups_host_entry"]              = self.__widgets["interface"].get_widget("ups_host_entry")
@@ -109,6 +107,7 @@ class interface :
         self.__widgets["menu_favorites_del"]          = self.__widgets["interface"].get_widget("menu_favorites_del")
         self.__widgets["progress_battery_charge"]     = self.__widgets["interface"].get_widget("progress_battery_charge")
         self.__widgets["progress_battery_load"]       = self.__widgets["interface"].get_widget("progress_battery_load")
+        self.__widgets["add_fav_confirm_button"]      = self.__widgets["interface"].get_widget("add_fav_confirm_button")
 
         # Create the tray icon and connect it to the show/hide method...
         self.__widgets["status_icon"] = gtk.StatusIcon()
@@ -134,7 +133,8 @@ class interface :
                              "on_ups_disconnect_clicked"              : self.disconnect_from_ups,
                              "on_ups_commands_button_clicked"         : self.__gui_send_ups_command,
                              "on_ups_vars_refresh_clicked"            : self.__gui_update_ups_vars_view,
-                             "on_ups_vars_tree_button_press_event"    : self.__gui_ups_vars_selected
+                             "on_ups_vars_tree_button_press_event"    : self.__gui_ups_vars_selected,
+                             "on_add_fav_name_entry_changed"          : self.__gui_add_favorite_check_gui_fields
                            }
 
         # Connect the callbacks
@@ -318,14 +318,11 @@ class interface :
     # Method called when user wants to add a new favorite entry. It
     # displays a dialog to enable user to select the name of the favorite
     def __gui_add_favorite( self, widget=None ) :
-        dialog_interface = gtk.glade.XML( self.__glade_file, "dialog_add_fav" )
-        dialog = dialog_interface.get_widget( "dialog_add_fav" )
+        dialog = self.__widgets["interface"].get_widget( "dialog_add_fav" )
+        fav_name_entry = self.__widgets["interface"].get_widget("add_fav_name_entry")
 
-        self.__widgets["add_fav_confirm_button"] = dialog_interface.get_widget("add_fav_confirm_button")
-
-        # Define interface callbacks actions
-        callbacks = { "on_add_fav_name_entry_changed" : self.__gui_add_favorite_check_gui_fields }
-        dialog_interface.signal_autoconnect( callbacks )
+        # Clear any existing text
+        fav_name_entry.set_text("")
 
         self.__widgets["main_window"].set_sensitive( False )
         rc = dialog.run()
@@ -339,37 +336,36 @@ class interface :
                 fav_data["login"]    = self.__widgets["ups_authentication_login"].get_text()
                 fav_data["password"] = self.__widgets["ups_authentication_password"].get_text()
 
-            fav_name = dialog_interface.get_widget("add_fav_name_entry").get_text()
+            fav_name = fav_name_entry.get_text()
             self.__favorites[ fav_name ] = fav_data
             self.__gui_refresh_favorites_menu()
 
             # Save all favorites
             self.__save_favorites()
 
-        dialog.destroy()
+        dialog.hide()
         self.__widgets["main_window"].set_sensitive( True )
 
     #-------------------------------------------------------------------
     # Method called when user wants to delete an entry from favorites
     def __gui_delete_favorite( self, widget=None ) :
 
-        dialog_interface = gtk.glade.XML( self.__glade_file, "dialog_del_fav" )
-        dialog = dialog_interface.get_widget( "dialog_del_fav" )
+        dialog = self.__widgets["interface"].get_widget( "dialog_del_fav" )
+        combo = self.__widgets["interface"].get_widget( "del_fav_combobox" )
 
-        # Remove the dummy combobox entry on list
-        dialog_interface.get_widget("del_fav_combobox").remove_text( 0 )
-
+        # Reset favorites combo
+        combo.get_model().clear()
         favs = self.__favorites.keys()
         favs.sort()
         for current in favs :
-            dialog_interface.get_widget("del_fav_combobox").append_text( current )
+            combo.append_text( current )
 
-        dialog_interface.get_widget("del_fav_combobox").set_active( 0 )
+        combo.set_active( 0 )
 
         self.__widgets["main_window"].set_sensitive( False )
         rc = dialog.run()
-        fav_name = dialog_interface.get_widget("del_fav_combobox").get_active_text()
-        dialog.destroy()
+        fav_name = combo.get_active_text()
+        dialog.hide()
         self.__widgets["main_window"].set_sensitive( True )
 
         if ( rc == 1 ) :
@@ -442,19 +438,18 @@ class interface :
                 ups_var = model.get_value( iter, 1 )
                 if ( ups_var in self.__ups_rw_vars ) :
                     # The selected var is RW, then we can show the update dialog
-                    dialog_interface = gtk.glade.XML( self.__glade_file, "dialog_edit_var" )
-                    dialog = dialog_interface.get_widget( "dialog_edit_var" )
+                    dialog = self.__widgets["interface"].get_widget( "dialog_edit_var" )
 
-                    lab = dialog_interface.get_widget( "edit_var_label" )
+                    lab = self.__widgets["interface"].get_widget( "edit_var_label" )
                     lab.set_markup( _("Enter a new value for the variable.\n\n{0} = {1} <span color=\"#606060\"><i>(current value)</i></span>").format( ups_var, self.__ups_rw_vars.get(ups_var)) )
 
-                    str = dialog_interface.get_widget( "edit_var_value_entry" )
+                    str = self.__widgets["interface"].get_widget( "edit_var_value_entry" )
                     str.set_text( self.__ups_rw_vars.get(ups_var) )
 
                     self.__widgets["main_window"].set_sensitive( False )
                     rc = dialog.run()
                     new_val = str.get_text()
-                    dialog.destroy()
+                    dialog.hide()
                     self.__widgets["main_window"].set_sensitive( True )
 
                     if ( rc == 1 ) :
@@ -598,12 +593,11 @@ class interface :
     #-------------------------------------------------------------------
     # Display the about dialog
     def gui_about_dialog( self, widget=None ) :
-        dialog_interface = gtk.glade.XML( self.__glade_file, "dialog_about" )
-        dialog = dialog_interface.get_widget( "dialog_about" )
+        dialog = self.__widgets["interface"].get_widget( "dialog_about" )
 
         self.__widgets["main_window"].set_sensitive( False )
         dialog.run()
-        dialog.destroy()
+        dialog.hide()
         self.__widgets["main_window"].set_sensitive( True )
 
     #-------------------------------------------------------------------
