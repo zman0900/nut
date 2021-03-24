@@ -28,7 +28,7 @@
 #            Corrected unsafe permissions on ~/.nut-monitor (Debian #777706)
 
 
-import gtk, gtk.glade, gobject
+import gtk, gobject
 import sys
 import base64
 import os, os.path
@@ -51,6 +51,7 @@ class interface :
     DESIRED_FAVORITES_DIRECTORY_MODE = 0700
 
     __program_dir                    = None
+    __builder                        = None
     __widgets                        = {}
     __callbacks                      = {}
     __favorites                      = {}
@@ -78,37 +79,16 @@ class interface :
 
         self.__program_dir = os.path.dirname( sys.argv[0] )
 
-        self.__widgets["interface"]                   = gtk.glade.XML( os.path.join( self.__program_dir, "gui-1.3.glade" ) )
-        self.__widgets["main_window"]                 = self.__widgets["interface"].get_widget("main_window")
-        self.__widgets["status_bar"]                  = self.__widgets["interface"].get_widget("status_bar")
-        self.__widgets["ups_host_entry"]              = self.__widgets["interface"].get_widget("ups_host_entry")
-        self.__widgets["ups_port_entry"]              = self.__widgets["interface"].get_widget("ups_port_entry")
-        self.__widgets["ups_refresh_button"]          = self.__widgets["interface"].get_widget("ups_refresh_button")
-        self.__widgets["ups_authentication_check"]    = self.__widgets["interface"].get_widget("ups_authentication_check")
-        self.__widgets["ups_authentication_frame"]    = self.__widgets["interface"].get_widget("ups_authentication_frame")
-        self.__widgets["ups_authentication_login"]    = self.__widgets["interface"].get_widget("ups_authentication_login")
-        self.__widgets["ups_authentication_password"] = self.__widgets["interface"].get_widget("ups_authentication_password")
-        self.__widgets["ups_list_combo"]              = self.__widgets["interface"].get_widget("ups_list_combo")
-        self.__widgets["ups_commands_combo"]          = self.__widgets["interface"].get_widget("ups_commands_combo")
-        self.__widgets["ups_commands_button"]         = self.__widgets["interface"].get_widget("ups_commands_button")
-        self.__widgets["ups_connect"]                 = self.__widgets["interface"].get_widget("ups_connect")
-        self.__widgets["ups_disconnect"]              = self.__widgets["interface"].get_widget("ups_disconnect")
-        self.__widgets["ups_params_box"]              = self.__widgets["interface"].get_widget("ups_params_box")
-        self.__widgets["ups_infos"]                   = self.__widgets["interface"].get_widget("ups_infos")
-        self.__widgets["ups_vars_tree"]               = self.__widgets["interface"].get_widget("ups_vars_tree")
-        self.__widgets["ups_vars_refresh"]            = self.__widgets["interface"].get_widget("ups_vars_refresh")
-        self.__widgets["ups_status_image"]            = self.__widgets["interface"].get_widget("ups_status_image")
-        self.__widgets["ups_status_left"]             = self.__widgets["interface"].get_widget("ups_status_left")
-        self.__widgets["ups_status_right"]            = self.__widgets["interface"].get_widget("ups_status_right")
-        self.__widgets["ups_status_time"]             = self.__widgets["interface"].get_widget("ups_status_time")
-        self.__widgets["menu_favorites_root"]         = self.__widgets["interface"].get_widget("menu_favorites_root")
-        self.__widgets["menu_favorites"]              = self.__widgets["interface"].get_widget("menu_favorites")
-        self.__widgets["menu_favorites_add"]          = self.__widgets["interface"].get_widget("menu_favorites_add")
-        self.__widgets["menu_favorites_del"]          = self.__widgets["interface"].get_widget("menu_favorites_del")
-        self.__widgets["progress_battery_charge"]     = self.__widgets["interface"].get_widget("progress_battery_charge")
-        self.__widgets["progress_battery_load"]       = self.__widgets["interface"].get_widget("progress_battery_load")
-        self.__widgets["add_fav_confirm_button"]      = self.__widgets["interface"].get_widget("add_fav_confirm_button")
-        self.__widgets["del_fav_combobox"]            = self.__widgets["interface"].get_widget("del_fav_combobox")
+        self.__builder = gtk.Builder()
+        self.__builder.set_translation_domain( APP )
+        self.__builder.add_from_file( os.path.join( self.__program_dir, "nut-manager.ui" ) )
+
+        # Store widgets used in updater thread
+        self.__widgets["ups_status_left"] = self.__builder.get_object("ups_status_left")
+        self.__widgets["ups_status_right"] = self.__builder.get_object("ups_status_right")
+        self.__widgets["progress_battery_charge"] = self.__builder.get_object("progress_battery_charge")
+        self.__widgets["progress_battery_load"] = self.__builder.get_object("progress_battery_load")
+        self.__widgets["ups_status_time"] = self.__builder.get_object("ups_status_time")
 
         # Create the tray icon and connect it to the show/hide method...
         self.__widgets["status_icon"] = gtk.StatusIcon()
@@ -116,7 +96,7 @@ class interface :
         self.__widgets["status_icon"].set_visible( True )
         self.__widgets["status_icon"].connect( "activate", self.tray_activated )
 
-        self.__widgets["ups_status_image"].set_from_file( os.path.join( self.__program_dir, "pixmaps", "on_line.png" ) )
+        self.__builder.get_object("ups_status_image").set_from_file( os.path.join( self.__program_dir, "pixmaps", "on_line.png" ) )
 
         # Define interface callbacks actions
         self.__callbacks = { "on_main_window_destroy"                 : self.quit,
@@ -139,35 +119,34 @@ class interface :
                            }
 
         # Connect the callbacks
-        self.__widgets["interface"].signal_autoconnect( self.__callbacks )
+        self.__builder.connect_signals( self.__callbacks )
 
         # Setup ComboBoxes ---------------------------------------------
-        self.__widgets["ups_list_combo"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
+        self.__builder.get_object("ups_list_combo").set_model( gtk.ListStore( gobject.TYPE_STRING ) )
         cell_renderer = gtk.CellRendererText()
-        self.__widgets["ups_list_combo"].pack_start( cell_renderer, True )
-        self.__widgets["ups_list_combo"].add_attribute( cell_renderer, "text", 0 )
+        self.__builder.get_object("ups_list_combo").pack_start( cell_renderer, True )
+        self.__builder.get_object("ups_list_combo").add_attribute( cell_renderer, "text", 0 )
 
-        self.__widgets["del_fav_combobox"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
+        self.__builder.get_object("del_fav_combobox").set_model( gtk.ListStore( gobject.TYPE_STRING ) )
         cell_renderer = gtk.CellRendererText()
-        self.__widgets["del_fav_combobox"].pack_start( cell_renderer, True )
-        self.__widgets["del_fav_combobox"].add_attribute( cell_renderer, "text", 0 )
+        self.__builder.get_object("del_fav_combobox").pack_start( cell_renderer, True )
+        self.__builder.get_object("del_fav_combobox").add_attribute( cell_renderer, "text", 0 )
 
-        self.__widgets["ups_commands_combo"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
+        self.__builder.get_object("ups_commands_combo").set_model( gtk.ListStore( gobject.TYPE_STRING ) )
         cell_renderer = gtk.CellRendererText()
-        self.__widgets["ups_commands_combo"].pack_start( cell_renderer )
-        self.__widgets["ups_commands_combo"].add_attribute( cell_renderer, "markup", 0 )
+        self.__builder.get_object("ups_commands_combo").pack_start( cell_renderer )
+        self.__builder.get_object("ups_commands_combo").add_attribute( cell_renderer, "markup", 0 )
 
 
         # Set UPS vars treeview properties -----------------------------
-        store = gtk.ListStore( gtk.gdk.Pixbuf, gobject.TYPE_STRING, gobject.TYPE_STRING )
-        self.__widgets["ups_vars_tree"].set_model( store )
-        self.__widgets["ups_vars_tree"].set_headers_visible( True )
+        self.__builder.get_object("ups_vars_tree").set_model( gtk.ListStore( gtk.gdk.Pixbuf, gobject.TYPE_STRING, gobject.TYPE_STRING ) )
+        self.__builder.get_object("ups_vars_tree").set_headers_visible( True )
 
         # Column 0
         cr = gtk.CellRendererPixbuf()
         column = gtk.TreeViewColumn( '', cr )
         column.add_attribute( cr, 'pixbuf', 0 )
-        self.__widgets["ups_vars_tree"].append_column( column )
+        self.__builder.get_object("ups_vars_tree").append_column( column )
 
         # Column 1
         cr = gtk.CellRendererText()
@@ -175,23 +154,22 @@ class interface :
         column = gtk.TreeViewColumn( _('Var name'), cr )
         column.set_sort_column_id( 1 )
         column.add_attribute( cr, 'text', 1 )
-        self.__widgets["ups_vars_tree"].append_column( column )
+        self.__builder.get_object("ups_vars_tree").append_column( column )
 
         # Column 2
         cr = gtk.CellRendererText()
         cr.set_property( 'editable', False )
         column = gtk.TreeViewColumn( _('Value'), cr )
         column.add_attribute( cr, 'text', 2 )
-        self.__widgets["ups_vars_tree"].append_column( column )
+        self.__builder.get_object("ups_vars_tree").append_column( column )
 
-        self.__widgets["ups_vars_tree"].get_model().set_sort_column_id( 1, gtk.SORT_ASCENDING )
-        self.__widgets["ups_vars_tree_store"] = store
+        self.__builder.get_object("ups_vars_tree").get_model().set_sort_column_id( 1, gtk.SORT_ASCENDING )
 
-        self.__widgets["ups_vars_tree"].set_size_request( -1, 50 )
+        self.__builder.get_object("ups_vars_tree").set_size_request( -1, 50 )
         #---------------------------------------------------------------
 
         if ( cmd_opts.hidden != True ) :
-            self.__widgets["main_window"].show()
+            self.__builder.get_object("main_window").show()
 
         # Define favorites path and load favorites
         if ( platform.system() == "Linux" ) :
@@ -210,45 +188,45 @@ class interface :
                 self.connect_to_ups()
         else :
             # Try to scan localhost for available ups and connect to it if there is only one
-            self.__widgets["ups_host_entry"].set_text( "localhost" )
+            self.__builder.get_object("ups_host_entry").set_text( "localhost" )
             self.__update_ups_list()
-            if ( len( self.__widgets["ups_list_combo"].get_model() ) == 1 ) :
+            if ( len( self.__builder.get_object("ups_list_combo").get_model() ) == 1 ) :
                 self.connect_to_ups()
 
     # Check if correct fields are filled to enable connection to the UPS
     def __check_gui_fields( self, widget=None ) :
         # If UPS list contains something, clear it
-        if self.__widgets["ups_list_combo"].get_active() != -1 :
-            self.__widgets["ups_list_combo"].get_model().clear()
-            self.__widgets["ups_connect"].set_sensitive( False )
-            self.__widgets["menu_favorites_add"].set_sensitive( False )
+        if self.__builder.get_object("ups_list_combo").get_active() != -1 :
+            self.__builder.get_object("ups_list_combo").get_model().clear()
+            self.__builder.get_object("ups_connect").set_sensitive( False )
+            self.__builder.get_object("menu_favorites_add").set_sensitive( False )
 
         # Host/Port selection
-        if len( self.__widgets["ups_host_entry"].get_text() ) > 0 :
+        if len( self.__builder.get_object("ups_host_entry").get_text() ) > 0 :
             sensitive = True
 
             # If authentication is selected, check that we have a login and password
-            if self.__widgets["ups_authentication_check"].get_active() :
-                if len( self.__widgets["ups_authentication_login"].get_text() ) == 0 :
+            if self.__builder.get_object("ups_authentication_check").get_active() :
+                if len( self.__builder.get_object("ups_authentication_login").get_text() ) == 0 :
                     sensitive = False
 
-                if len( self.__widgets["ups_authentication_password"].get_text() ) == 0 :
+                if len( self.__builder.get_object("ups_authentication_password").get_text() ) == 0 :
                     sensitive = False
 
-            self.__widgets["ups_refresh_button"].set_sensitive( sensitive )
+            self.__builder.get_object("ups_refresh_button").set_sensitive( sensitive )
             if not sensitive :
-                self.__widgets["ups_connect"].set_sensitive( False )
-                self.__widgets["menu_favorites_add"].set_sensitive( False )
+                self.__builder.get_object("ups_connect").set_sensitive( False )
+                self.__builder.get_object("menu_favorites_add").set_sensitive( False )
         else :
-            self.__widgets["ups_refresh_button"].set_sensitive( False )
-            self.__widgets["ups_connect"].set_sensitive( False )
-            self.__widgets["menu_favorites_add"].set_sensitive( False )
+            self.__builder.get_object("ups_refresh_button").set_sensitive( False )
+            self.__builder.get_object("ups_connect").set_sensitive( False )
+            self.__builder.get_object("menu_favorites_add").set_sensitive( False )
 
         # Use authentication fields...
-        if self.__widgets["ups_authentication_check"].get_active() :
-            self.__widgets["ups_authentication_frame"].set_sensitive( True )
+        if self.__builder.get_object("ups_authentication_check").get_active() :
+            self.__builder.get_object("ups_authentication_frame").set_sensitive( True )
         else :
-            self.__widgets["ups_authentication_frame"].set_sensitive( False )
+            self.__builder.get_object("ups_authentication_frame").set_sensitive( False )
 
         self.gui_status_message()
 
@@ -256,9 +234,9 @@ class interface :
     # This method is used to show/hide the main window when user clicks on the tray icon
     def tray_activated( self, widget=None, data=None ) :
         if self.__window_visible :
-            self.__widgets["main_window"].hide()
+            self.__builder.get_object("main_window").hide()
         else :
-            self.__widgets["main_window"].show()
+            self.__builder.get_object("main_window").show()
 
         self.__window_visible = not self.__window_visible
 
@@ -266,7 +244,7 @@ class interface :
     # Change the status icon and tray icon
     def change_status_icon( self, icon="on_line", blink=False ) :
         self.__widgets["status_icon"].set_from_file( os.path.join( self.__program_dir, "pixmaps", "%s.png" % icon ) )
-        self.__widgets["ups_status_image"].set_from_file( os.path.join( self.__program_dir, "pixmaps", "%s.png" % icon ) )
+        self.__builder.get_object("ups_status_image").set_from_file( os.path.join( self.__program_dir, "pixmaps", "%s.png" % icon ) )
         self.__widgets["status_icon"].set_blinking( blink )
 
     #-------------------------------------------------------------------
@@ -274,14 +252,14 @@ class interface :
     # using connection parameters (host, port, login, pass...)
     def __update_ups_list( self, widget=None ) :
 
-        host     = self.__widgets["ups_host_entry"].get_text()
-        port     = int( self.__widgets["ups_port_entry"].get_value() )
+        host     = self.__builder.get_object("ups_host_entry").get_text()
+        port     = int( self.__builder.get_object("ups_port_entry").get_value() )
         login    = None
         password = None
 
-        if self.__widgets["ups_authentication_check"].get_active() :
-            login    = self.__widgets["ups_authentication_login"].get_text()
-            password = self.__widgets["ups_authentication_password"].get_text()
+        if self.__builder.get_object("ups_authentication_check").get_active() :
+            login    = self.__builder.get_object("ups_authentication_login").get_text()
+            password = self.__builder.get_object("ups_authentication_password").get_text()
 
         try :
             nut_handler = PyNUT.PyNUTClient( host=host, port=port, login=login, password=password )
@@ -291,15 +269,15 @@ class interface :
             ups_list.sort()
 
             # If UPS list contains something, clear it
-            self.__widgets["ups_list_combo"].get_model().clear()
+            self.__builder.get_object("ups_list_combo").get_model().clear()
 
             for current in ups_list :
-                self.__widgets["ups_list_combo"].append_text( current )
+                self.__builder.get_object("ups_list_combo").append_text( current )
 
-            self.__widgets["ups_list_combo"].set_active( 0 )
+            self.__builder.get_object("ups_list_combo").set_active( 0 )
 
-            self.__widgets["ups_connect"].set_sensitive( True )
-            self.__widgets["menu_favorites_add"].set_sensitive( True )
+            self.__builder.get_object("ups_connect").set_sensitive( True )
+            self.__builder.get_object("menu_favorites_add").set_sensitive( True )
 
             self.gui_status_message( _("Found {0} devices on {1}").format( len( ups_list ), host ) )
 
@@ -321,23 +299,23 @@ class interface :
     # Method called when user wants to add a new favorite entry. It
     # displays a dialog to enable user to select the name of the favorite
     def __gui_add_favorite( self, widget=None ) :
-        dialog = self.__widgets["interface"].get_widget( "dialog_add_fav" )
-        fav_name_entry = self.__widgets["interface"].get_widget("add_fav_name_entry")
+        dialog = self.__builder.get_object("dialog_add_fav")
+        fav_name_entry = self.__builder.get_object("add_fav_name_entry")
 
         # Clear any existing text
         fav_name_entry.set_text("")
 
-        self.__widgets["main_window"].set_sensitive( False )
+        self.__builder.get_object("main_window").set_sensitive( False )
         rc = dialog.run()
         if rc == 1 :
             fav_data = {}
-            fav_data["host"] = self.__widgets["ups_host_entry"].get_text()
-            fav_data["port"] = "%d" % self.__widgets["ups_port_entry"].get_value()
-            fav_data["ups"]  = self.__widgets["ups_list_combo"].get_active_text()
-            fav_data["auth"] = self.__widgets["ups_authentication_check"].get_active()
+            fav_data["host"] = self.__builder.get_object("ups_host_entry").get_text()
+            fav_data["port"] = "%d" % self.__builder.get_object("ups_port_entry").get_value()
+            fav_data["ups"]  = self.__builder.get_object("ups_list_combo").get_active_text()
+            fav_data["auth"] = self.__builder.get_object("ups_authentication_check").get_active()
             if fav_data["auth"] :
-                fav_data["login"]    = self.__widgets["ups_authentication_login"].get_text()
-                fav_data["password"] = self.__widgets["ups_authentication_password"].get_text()
+                fav_data["login"]    = self.__builder.get_object("ups_authentication_login").get_text()
+                fav_data["password"] = self.__builder.get_object("ups_authentication_password").get_text()
 
             fav_name = fav_name_entry.get_text()
             self.__favorites[ fav_name ] = fav_data
@@ -347,14 +325,14 @@ class interface :
             self.__save_favorites()
 
         dialog.hide()
-        self.__widgets["main_window"].set_sensitive( True )
+        self.__builder.get_object("main_window").set_sensitive( True )
 
     #-------------------------------------------------------------------
     # Method called when user wants to delete an entry from favorites
     def __gui_delete_favorite( self, widget=None ) :
 
-        dialog = self.__widgets["interface"].get_widget( "dialog_del_fav" )
-        combo = self.__widgets["del_fav_combobox"]
+        dialog = self.__builder.get_object("dialog_del_fav")
+        combo = self.__builder.get_object("del_fav_combobox")
 
         # Reset favorites combo
         combo.get_model().clear()
@@ -365,11 +343,11 @@ class interface :
 
         combo.set_active( 0 )
 
-        self.__widgets["main_window"].set_sensitive( False )
+        self.__builder.get_object("main_window").set_sensitive( False )
         rc = dialog.run()
         fav_name = combo.get_active_text()
         dialog.hide()
-        self.__widgets["main_window"].set_sensitive( True )
+        self.__builder.get_object("main_window").set_sensitive( True )
 
         if ( rc == 1 ) :
             # Remove entry, show confirmation dialog
@@ -391,35 +369,35 @@ class interface :
             # If auth is activated, process it before other fields to avoir weird
             # reactions with the 'check_gui_fields' function.
             if ( self.__favorites[fav_name].get("auth", False ) ) :
-                self.__widgets["ups_authentication_check"].set_active( True )
-                self.__widgets["ups_authentication_login"].set_text( self.__favorites[fav_name].get("login","") )
-                self.__widgets["ups_authentication_password"].set_text( self.__favorites[fav_name].get("password","") )
+                self.__builder.get_object("ups_authentication_check").set_active( True )
+                self.__builder.get_object("ups_authentication_login").set_text( self.__favorites[fav_name].get("login","") )
+                self.__builder.get_object("ups_authentication_password").set_text( self.__favorites[fav_name].get("password","") )
 
-            self.__widgets["ups_host_entry"].set_text( self.__favorites[fav_name].get("host","") )
-            self.__widgets["ups_port_entry"].set_value( float(self.__favorites[fav_name].get("port",3493.0)) )
+            self.__builder.get_object("ups_host_entry").set_text( self.__favorites[fav_name].get("host","") )
+            self.__builder.get_object("ups_port_entry").set_value( float(self.__favorites[fav_name].get("port",3493.0)) )
 
             # Clear UPS list and add current UPS name
-            self.__widgets["ups_list_combo"].get_model().clear()
+            self.__builder.get_object("ups_list_combo").get_model().clear()
 
-            self.__widgets["ups_list_combo"].append_text( self.__favorites[fav_name].get("ups","") )
-            self.__widgets["ups_list_combo"].set_active( 0 )
+            self.__builder.get_object("ups_list_combo").append_text( self.__favorites[fav_name].get("ups","") )
+            self.__builder.get_object("ups_list_combo").set_active( 0 )
 
             # Activate the connect button
-            self.__widgets["ups_connect"].set_sensitive( True )
+            self.__builder.get_object("ups_connect").set_sensitive( True )
 
             self.gui_status_message( _("Loaded '%s'") % fav_name )
 
     #-------------------------------------------------------------------
     # Send the selected command to the UPS
     def __gui_send_ups_command( self, widget=None ) :
-        offset = self.__widgets["ups_commands_combo"].get_active()
+        offset = self.__builder.get_object("ups_commands_combo").get_active()
         cmd    = self.__ups_commands[ offset ]
 
         md = gtk.MessageDialog( None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, _("Are you sure that you want to send\n'%s' to the device ?") % cmd )
-        self.__widgets["main_window"].set_sensitive( False )
+        self.__builder.get_object("main_window").set_sensitive( False )
         resp = md.run()
         md.destroy()
-        self.__widgets["main_window"].set_sensitive( True )
+        self.__builder.get_object("main_window").set_sensitive( True )
 
         if ( resp == gtk.RESPONSE_YES ) :
             try :
@@ -435,25 +413,25 @@ class interface :
     def __gui_ups_vars_selected( self, widget, event ) :
         # Check if it's a double click...
         if ( (event.button == 1) and (event.type == gtk.gdk._2BUTTON_PRESS) ) :
-            treeselection = self.__widgets["ups_vars_tree"].get_selection()
+            treeselection = self.__builder.get_object("ups_vars_tree").get_selection()
             (model,iter)  = treeselection.get_selected()
             try :
                 ups_var = model.get_value( iter, 1 )
                 if ( ups_var in self.__ups_rw_vars ) :
                     # The selected var is RW, then we can show the update dialog
-                    dialog = self.__widgets["interface"].get_widget( "dialog_edit_var" )
+                    dialog = self.__builder.get_object("dialog_edit_var")
 
-                    lab = self.__widgets["interface"].get_widget( "edit_var_label" )
+                    lab = self.__builder.get_object("edit_var_label")
                     lab.set_markup( _("Enter a new value for the variable.\n\n{0} = {1} <span color=\"#606060\"><i>(current value)</i></span>").format( ups_var, self.__ups_rw_vars.get(ups_var)) )
 
-                    str = self.__widgets["interface"].get_widget( "edit_var_value_entry" )
+                    str = self.__builder.get_object("edit_var_value_entry")
                     str.set_text( self.__ups_rw_vars.get(ups_var) )
 
-                    self.__widgets["main_window"].set_sensitive( False )
+                    self.__builder.get_object("main_window").set_sensitive( False )
                     rc = dialog.run()
                     new_val = str.get_text()
                     dialog.hide()
-                    self.__widgets["main_window"].set_sensitive( True )
+                    self.__builder.get_object("main_window").set_sensitive( True )
 
                     if ( rc == 1 ) :
                         try :
@@ -493,14 +471,14 @@ class interface :
             menu_item = gtk.MenuItem( current )
             menu_item.show()
             self.__fav_menu_items.append( menu_item )
-            self.__widgets["menu_favorites"].append( menu_item )
+            self.__builder.get_object("menu_favorites").append( menu_item )
 
             menu_item.connect_object( "activate", self.__gui_load_favorite, current )
 
         if len( items ) > 0 :
-            self.__widgets["menu_favorites_del"].set_sensitive( True )
+            self.__builder.get_object("menu_favorites_del").set_sensitive( True )
         else :
-            self.__widgets["menu_favorites_del"].set_sensitive( False )
+            self.__builder.get_object("menu_favorites_del").set_sensitive( False )
 
     #-------------------------------------------------------------------
     # In 'add favorites' dialog, this method compares the content of the
@@ -510,9 +488,9 @@ class interface :
     def __gui_add_favorite_check_gui_fields( self, widget=None ) :
         fav_name = widget.get_text()
         if ( len( fav_name ) > 0 ) and ( fav_name not in self.__favorites.keys() ) :
-            self.__widgets["add_fav_confirm_button"].set_sensitive( True )
+            self.__builder.get_object("add_fav_confirm_button").set_sensitive( True )
         else :
-            self.__widgets["add_fav_confirm_button"].set_sensitive( False )
+            self.__builder.get_object("add_fav_confirm_button").set_sensitive( False )
 
     #-------------------------------------------------------------------
     # Load and parse favorites
@@ -596,27 +574,27 @@ class interface :
     #-------------------------------------------------------------------
     # Display the about dialog
     def gui_about_dialog( self, widget=None ) :
-        dialog = self.__widgets["interface"].get_widget( "dialog_about" )
+        dialog = self.__builder.get_object("dialog_about")
 
-        self.__widgets["main_window"].set_sensitive( False )
+        self.__builder.get_object("main_window").set_sensitive( False )
         dialog.run()
         dialog.hide()
-        self.__widgets["main_window"].set_sensitive( True )
+        self.__builder.get_object("main_window").set_sensitive( True )
 
     #-------------------------------------------------------------------
     # Display a message on the status bar. The message is also set as
     # tooltip to enable users to see long messages.
     def gui_status_message( self, msg="" ) :
-        context_id = self.__widgets["status_bar"].get_context_id("Infos")
-        self.__widgets["status_bar"].pop( context_id )
+        context_id = self.__builder.get_object("status_bar").get_context_id("Infos")
+        self.__builder.get_object("status_bar").pop( context_id )
 
         if ( platform.system() == "Windows" ) :
             text = msg.decode("cp1250").encode("utf8")
         else :
             text = msg
 
-        message_id = self.__widgets["status_bar"].push( context_id, text.replace("\n", "") )
-        self.__widgets["status_bar"].set_tooltip_text( text )
+        message_id = self.__builder.get_object("status_bar").push( context_id, text.replace("\n", "") )
+        self.__builder.get_object("status_bar").set_tooltip_text( text )
 
     #-------------------------------------------------------------------
     # Display a notification using PyNotify with an optional icon
@@ -648,14 +626,14 @@ class interface :
     # Connect to the selected UPS using parameters (host,port,login,pass)
     def connect_to_ups( self, widget=None ) :
 
-        host     = self.__widgets["ups_host_entry"].get_text()
-        port     = int( self.__widgets["ups_port_entry"].get_value() )
+        host     = self.__builder.get_object("ups_host_entry").get_text()
+        port     = int( self.__builder.get_object("ups_port_entry").get_value() )
         login    = None
         password = None
 
-        if self.__widgets["ups_authentication_check"].get_active() :
-            login    = self.__widgets["ups_authentication_login"].get_text()
-            password = self.__widgets["ups_authentication_password"].get_text()
+        if self.__builder.get_object("ups_authentication_check").get_active() :
+            login    = self.__builder.get_object("ups_authentication_login").get_text()
+            password = self.__builder.get_object("ups_authentication_password").get_text()
 
         try :
             self.__ups_handler = PyNUT.PyNUTClient( host=host, port=port, login=login, password=password )
@@ -667,7 +645,7 @@ class interface :
 
         # Check if selected UPS exists on server...
         srv_upses          = self.__ups_handler.GetUPSList()
-        self.__current_ups = self.__widgets["ups_list_combo"].get_active_text()
+        self.__current_ups = self.__builder.get_object("ups_list_combo").get_active_text()
 
         if not srv_upses.has_key( self.__current_ups ) :
             self.gui_status_message( _("Device '%s' not found on server") % self.__current_ups )
@@ -675,23 +653,23 @@ class interface :
             return
 
         self.__connected = True
-        self.__widgets["ups_connect"].hide()
-        self.__widgets["ups_disconnect"].show()
-        self.__widgets["ups_infos"].show()
-        self.__widgets["ups_params_box"].set_sensitive( False )
-        self.__widgets["menu_favorites_root"].set_sensitive( False )
-        self.__widgets["ups_params_box"].hide()
+        self.__builder.get_object("ups_connect").hide()
+        self.__builder.get_object("ups_disconnect").show()
+        self.__builder.get_object("ups_infos").show()
+        self.__builder.get_object("ups_params_box").set_sensitive( False )
+        self.__builder.get_object("menu_favorites_root").set_sensitive( False )
+        self.__builder.get_object("ups_params_box").hide()
 
         commands = self.__ups_handler.GetUPSCommands( self.__current_ups )
         self.__ups_commands = commands.keys()
         self.__ups_commands.sort()
 
         # Refresh UPS commands combo box
-        self.__widgets["ups_commands_combo"].get_model().clear()
+        self.__builder.get_object("ups_commands_combo").get_model().clear()
         for desc in self.__ups_commands :
-            self.__widgets["ups_commands_combo"].get_model().append( [ "%s\n<span color=\"#707070\">%s</span>" % ( desc, commands[desc] ) ] )
+            self.__builder.get_object("ups_commands_combo").get_model().append( [ "%s\n<span color=\"#707070\">%s</span>" % ( desc, commands[desc] ) ] )
 
-        self.__widgets["ups_commands_combo"].set_active( 0 )
+        self.__builder.get_object("ups_commands_combo").set_active( 0 )
 
         # Update UPS vars manually before the thread
         self.__ups_vars    = self.__ups_handler.GetUPSVars( self.__current_ups )
@@ -699,7 +677,7 @@ class interface :
         self.__gui_update_ups_vars_view()
 
         # Try to resize the main window...
-        self.__widgets["main_window"].resize( 1, 1 )
+        self.__builder.get_object("main_window").resize( 1, 1 )
 
         # Start the GUI updater thread
         self.__gui_thread = gui_updater( self )
@@ -715,7 +693,7 @@ class interface :
             vars   = self.__ups_vars
             rwvars = self.__ups_rw_vars
 
-            self.__widgets["ups_vars_tree_store"].clear()
+            self.__builder.get_object("ups_vars_tree").get_model().clear()
 
             for k,v in vars.iteritems() :
                 if ( rwvars.has_key( k ) ) :
@@ -724,7 +702,7 @@ class interface :
                     icon_file = os.path.join( self.__program_dir, "pixmaps", "var-ro.png" )
 
                 icon = gtk.gdk.pixbuf_new_from_file( icon_file )
-                self.__widgets["ups_vars_tree_store"].append( [ icon, k, v ] )
+                self.__builder.get_object("ups_vars_tree").get_model().append( [ icon, k, v ] )
 
 
     #-------------------------------------------------------------------
@@ -732,16 +710,16 @@ class interface :
     def disconnect_from_ups( self, widget=None ) :
 
         self.__connected = False
-        self.__widgets["ups_connect"].show()
-        self.__widgets["ups_disconnect"].hide()
-        self.__widgets["ups_infos"].hide()
-        self.__widgets["ups_params_box"].set_sensitive( True )
-        self.__widgets["menu_favorites_root"].set_sensitive( True )
+        self.__builder.get_object("ups_connect").show()
+        self.__builder.get_object("ups_disconnect").hide()
+        self.__builder.get_object("ups_infos").hide()
+        self.__builder.get_object("ups_params_box").set_sensitive( True )
+        self.__builder.get_object("menu_favorites_root").set_sensitive( True )
         self.__widgets["status_icon"].set_tooltip_markup( _("<i>Not connected</i>") )
-        self.__widgets["ups_params_box"].show()
+        self.__builder.get_object("ups_params_box").show()
 
         # Try to resize the main window...
-        self.__widgets["main_window"].resize( 1, 1 )
+        self.__builder.get_object("main_window").resize( 1, 1 )
 
         # Stop the GUI updater thread
         self.__gui_thread.stop_thread()
@@ -764,7 +742,6 @@ class gui_updater( threading.Thread ) :
         self.__parent_class = parent_class
 
     def run( self ) :
-
         ups    = self.__parent_class._interface__current_ups
         was_online = True
 
@@ -893,10 +870,6 @@ if __name__ == "__main__" :
     gettext.bindtextdomain( APP, DIR )
     gettext.textdomain( APP )
     _ = gettext.gettext
-
-    for module in ( gettext, gtk.glade ) :
-         module.bindtextdomain( APP, DIR )
-         module.textdomain( APP )
 
     gui = interface()
     gtk.main()
