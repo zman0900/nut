@@ -89,6 +89,7 @@ class interface :
         self.__widgets["ups_authentication_login"]    = self.__widgets["interface"].get_widget("ups_authentication_login")
         self.__widgets["ups_authentication_password"] = self.__widgets["interface"].get_widget("ups_authentication_password")
         self.__widgets["ups_list_combo"]              = self.__widgets["interface"].get_widget("ups_list_combo")
+        self.__widgets["ups_commands_combo"]          = self.__widgets["interface"].get_widget("ups_commands_combo")
         self.__widgets["ups_commands_button"]         = self.__widgets["interface"].get_widget("ups_commands_button")
         self.__widgets["ups_connect"]                 = self.__widgets["interface"].get_widget("ups_connect")
         self.__widgets["ups_disconnect"]              = self.__widgets["interface"].get_widget("ups_disconnect")
@@ -129,6 +130,7 @@ class interface :
                              "on_ups_refresh_button_clicked"          : self.__update_ups_list,
                              "on_ups_connect_clicked"                 : self.connect_to_ups,
                              "on_ups_disconnect_clicked"              : self.disconnect_from_ups,
+                             "on_ups_commands_button_clicked"         : self.__gui_send_ups_command,
                              "on_ups_vars_refresh_clicked"            : self.__gui_update_ups_vars_view,
                              "on_ups_vars_tree_button_press_event"    : self.__gui_ups_vars_selected
                            }
@@ -171,29 +173,13 @@ class interface :
         self.__widgets["ups_vars_tree"].set_size_request( -1, 50 )
         #---------------------------------------------------------------
 
-        # UPS Commands combo box creation ------------------------------
-        container = self.__widgets["ups_commands_button"].get_parent()
-        self.__widgets["ups_commands_button"].destroy()
-        self.__widgets["ups_commands_combo"] = gtk.ComboBox()
+        # UPS Commands combo box setup ---------------------------------
+        self.__widgets["ups_commands_combo"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
 
-        list_store = gtk.ListStore( gobject.TYPE_STRING )
-
-        self.__widgets["ups_commands_combo"].set_model( list_store )
         cell_renderer = gtk.CellRendererText()
-        cell_renderer.set_property( "xalign", 0 )
-        self.__widgets["ups_commands_combo"].pack_start( cell_renderer, True )
+        self.__widgets["ups_commands_combo"].pack_start( cell_renderer )
         self.__widgets["ups_commands_combo"].add_attribute( cell_renderer, "markup", 0 )
 
-        container.pack_start( self.__widgets["ups_commands_combo"], True )
-        self.__widgets["ups_commands_combo"].set_active( 0 )
-        self.__widgets["ups_commands_combo"].show_all()
-
-        self.__widgets["ups_commands_button"] = gtk.Button( stock=gtk.STOCK_EXECUTE )
-        container.pack_start( self.__widgets["ups_commands_button"], True )
-        self.__widgets["ups_commands_button"].show()
-        self.__widgets["ups_commands_button"].connect( "clicked", self.__gui_send_ups_command )
-
-        self.__widgets["ups_commands_combo_store"] = list_store
         #---------------------------------------------------------------
 
         if ( cmd_opts.hidden != True ) :
@@ -699,9 +685,9 @@ class interface :
         self.__ups_commands.sort()
 
         # Refresh UPS commands combo box
-        self.__widgets["ups_commands_combo_store"].clear()
+        self.__widgets["ups_commands_combo"].get_model().clear()
         for desc in self.__ups_commands :
-            self.__widgets["ups_commands_combo_store"].append( [ "%s\n<span color=\"#707070\">%s</span>" % ( desc, commands[desc] ) ] )
+            self.__widgets["ups_commands_combo"].get_model().append( [ "%s\n<span color=\"#707070\">%s</span>" % ( desc, commands[desc] ) ] )
 
         self.__widgets["ups_commands_combo"].set_active( 0 )
 
