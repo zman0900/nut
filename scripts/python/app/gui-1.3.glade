@@ -651,7 +651,6 @@ want to delete from list...
                                   <widget class="GtkComboBox" id="ups_list_combo">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="items" translatable="yes">None</property>
                                   </widget>
                                   <packing>
                                     <property name="left_attach">1</property>

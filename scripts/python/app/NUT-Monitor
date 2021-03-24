@@ -138,8 +138,11 @@ class interface :
         # Connect the callbacks
         self.__widgets["interface"].signal_autoconnect( self.__callbacks )
 
-        # Remove the dummy combobox entry on UPS List and Commands
-        self.__widgets["ups_list_combo"].remove_text( 0 )
+        # UPS List combo box setup ---------------------------------
+        self.__widgets["ups_list_combo"].set_model( gtk.ListStore( gobject.TYPE_STRING ) )
+        cell_renderer = gtk.CellRendererText()
+        self.__widgets["ups_list_combo"].pack_start( cell_renderer, True )
+        self.__widgets["ups_list_combo"].add_attribute( cell_renderer, "text", 0 )
 
         # Set UPS vars treeview properties -----------------------------
         store = gtk.ListStore( gtk.gdk.Pixbuf, gobject.TYPE_STRING, gobject.TYPE_STRING )
